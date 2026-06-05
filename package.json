@@ -1,0 +1,31 @@
+{
+  "name": "b0626-hanzala-naseer-innovaxel-backend",
+  "version": "1.0.0",
+  "description": "Event Registration System API built for Innovaxel Summer Internship Program 2026 using Node.js, Express.js, PostgreSQL, and Sequelize.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hanzala-Naseer/B0626-Hanzala-Naseer-Innovaxel-Backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Hanzala-Naseer/B0626-Hanzala-Naseer-Innovaxel-Backend/issues"
+  },
+  "homepage": "https://github.com/Hanzala-Naseer/B0626-Hanzala-Naseer-Innovaxel-Backend#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.21.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
