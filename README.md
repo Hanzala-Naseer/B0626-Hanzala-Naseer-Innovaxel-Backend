@@ -114,7 +114,6 @@ The app loads `.env.test` automatically when `NODE_ENV=test`.
 - Blocks registration if the event is already full
 - Filter for upcoming events only
 - Sort events by date
-- Input validation using Zod
 - Race condition handling using Prisma transactions
 
 ---
@@ -146,5 +145,3 @@ There's also a concurrency test in `src/tests/race-test.js` that sends multiple 
 ## Notes
 
 - This project was built for learning and as an internship submission — not meant for production
-- Prisma handles all DB queries
-- Zod handles input validation on the request body
