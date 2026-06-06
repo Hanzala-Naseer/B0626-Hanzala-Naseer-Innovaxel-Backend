@@ -1,74 +1,115 @@
-# Event Registration System API
+Event Registration System API
 
-This is a backend API for managing events and user registrations.  
-It was built as a take-home assignment using Node.js, Express, Prisma, and PostgreSQL.
+A backend API for creating events and handling user registrations.
+Built as part of the Innovaxel Summer Internship 2026.
 
-The main idea is simple: create events, let users register, and handle seat limits properly.
+It supports seat limits, prevents duplicate registrations, and handles race conditions using transactions.
 
----
-
-## Setup
-
-```bash
-git clone https://github.com/Hanzala-Naseer/B0626-Hanzala-Naseer-Innovaxel-Backend.git
+Tech Stack
+Node.js
+Express.js
+Prisma ORM
+PostgreSQL / SQLite
+Jest + Supertest
+Getting Started
+1. Clone the repo
+gh repo clone Hanzala-Naseer/B0626-Hanzala-Naseer-Innovaxel-Backend
 cd B0626-Hanzala-Naseer-Innovaxel-Backend
+2. Install dependencies
 npm install
+3. Setup database
 
-Run Prisma migration:
+Run Prisma migrations:
 
 npx prisma migrate dev
 
-Start server:
+If needed, generate client:
 
-npm run dev
+npx prisma generate
+4. Start the server
+npm run dev   # development (nodemon)
+npm start     # production
+
+Server runs on:
+
+http://localhost:3000
 Environment Variables
 
 Create a .env file:
 
-DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+DATABASE_URL=postgresql://user:password@localhost:5432/yourdb
 PORT=3000
 
-For tests, create .env.test:
+For testing, create .env.test:
 
-DATABASE_URL="postgresql://user:password@localhost:5432/testdb"
+DATABASE_URL=postgresql://user:password@localhost:5432/yourdb_test
 NODE_ENV=test
+
+Tests automatically use .env.test when NODE_ENV=test.
+
 API Endpoints
 Events
-POST /events → create event
-GET /events → get all events
-GET /events?upcoming=true → upcoming events only
-GET /events?sort=asc|desc → sort by date
+Method	Endpoint	Description
+GET	/events	Get all events
+POST	/events	Create event
+GET	/events?upcoming=true	Get upcoming events
+GET	/events?sort=desc	Sort events by date
+
+Create Event
+
+{
+  "name": "Tech Meetup",
+  "totalSeats": 50,
+  "eventDate": "2026-09-01T18:00:00Z"
+}
 Registrations
-POST /registrations → register user for event
-DELETE /registrations/:id → cancel registration
+Method	Endpoint	Description
+POST	/registrations	Register user
+DELETE	/registrations/:id	Cancel registration
+
+Register User
+
+{
+  "userName": "hanzala",
+  "eventId": 1
+}
 Features
-Create events with seat limits
+Create and view events
 Register users for events
 Cancel registrations
 Prevent duplicate registrations
-Prevent overbooking
-Filter upcoming events
-Sort events by date
+Prevent overbooking (seat limit protection)
+Event filtering (upcoming events)
+Sorting by date
 Input validation using Zod
-Race condition handling using transactions
-Seat Handling
+Race condition handling using Prisma transactions
+How Seat Logic Works
 
 When an event is created, availableSeats = totalSeats.
 
-On registration:
+When someone registers:
 
-Seat is reduced by 1 if available
-If two requests come at the same time, only one succeeds because of transaction handling
-If no seats are left, request fails with 409
+It checks if seats are available
+Decreases seat count by 1
+Blocks request if event is full
 
-On cancellation:
+If multiple requests hit at the same time, only one succeeds due to transaction handling.
 
-Seat is added back safely using transaction
-Tests
+When a registration is cancelled, the seat is added back safely inside a transaction.
 
-Run tests:
+Running Tests
+
+Make sure .env.test is set up with a separate database.
+
+Then run:
 
 npm test
 
 Tests use Jest + Supertest.
-All main flows like registration, cancellation, and overbooking are covered.
+
+The project also includes concurrency tests to make sure overbooking doesn’t happen.
+
+Notes
+Prisma is used for DB handling
+Tests run sequentially using --runInBand
+Project is structured for learning + internship submission, not production scale
