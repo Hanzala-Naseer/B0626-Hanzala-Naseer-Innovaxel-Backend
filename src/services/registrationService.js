@@ -1,140 +1,108 @@
-// const { Event, Registration } = require("../models");
-// const sequelize= require("../config/database");
-
-// const registerUser = async ({ userName, eventId }) => {
-//   const transaction = await sequelize.transaction();
-
-//   try {
-//     const event = await Event.findByPk(eventId, {
-//       transaction,
-//       lock: transaction.LOCK.UPDATE,
-//     });
-
-//     if (!event) {
-//       throw new Error("Event not found");
-//     }
-
-//     const existingRegistration = await Registration.findOne({
-//       where: {
-//         userName,
-//         eventId,
-//       },
-//       transaction,
-//     });
-
-//     if (existingRegistration) {
-//       throw new Error("User already registered for this event");
-//     }
-
-//     const registrationCount = await Registration.count({
-//       where: {
-//         eventId,
-//       },
-//       transaction,
-//     });
-
-//     if (registrationCount >= event.totalSeats) {
-//       throw new Error("Event is full");
-//     }
-
-//     const registration = await Registration.create(
-//       {
-//         userName,
-//         eventId,
-//       },
-//       {
-//         transaction,
-//       }
-//     );
-
-//     await transaction.commit();
-
-//     return registration;
-//   } catch (error) {
-//     await transaction.rollback();
-//     throw error;
-//   }
-// };
-
-
-// const cancelRegistration = async (registrationId) => {
-//   const registration = await Registration.findByPk(registrationId);
-
-//   if (!registration) {
-//     throw new Error("Registration not found");
-//   }
-
-//   await registration.destroy();
-
-//   return {
-//     message: "Registration cancelled successfully",
-//   };
-// };
-
-// module.exports = {
-//   registerUser,
-//   cancelRegistration
-// };
-
-const { Event, Registration } = require("../models");
-const sequelize = require("../config/database");
+const prisma = require("../config/prisma");
 
 const registerUser = async ({ userName, eventId }) => {
-  const transaction = await sequelize.transaction();
+  const eId = Number(eventId);
 
   try {
-    const event = await Event.findByPk(eventId, {
-      transaction,
-      lock: transaction.LOCK.UPDATE,
-    });
+    return await prisma.$transaction(async (tx) => {
+      const event = await tx.event.findUnique({
+        where: {
+          id: eId,
+        },
+      });
 
-    if (!event) {
-      throw new Error("Event not found");
+      if (!event) {
+        const err = new Error("Event not found");
+        err.statusCode = 404;
+        throw err;
+      }
+
+      const updated = await tx.event.updateMany({
+        where: {
+          id: eId,
+          availableSeats: {
+            gt: 0,
+          },
+        },
+        data: {
+          availableSeats: {
+            decrement: 1,
+          },
+        },
+      });
+
+      if (updated.count === 0) {
+        const err = new Error("Event is full");
+        err.statusCode = 409;
+        throw err;
+      }
+
+      return await tx.registration.create({
+        data: {
+          userName,
+          eventId: eId,
+        },
+      });
+    });
+  } catch (error) {
+    if (error.code === "P2002") {
+      await prisma.event.update({
+        where: {
+          id: eId,
+        },
+        data: {
+          availableSeats: {
+            increment: 1,
+          },
+        },
+      });
+
+      const err = new Error(
+        "User already registered for this event"
+      );
+      err.statusCode = 409;
+      throw err;
     }
 
-    const existing = await Registration.findOne({
-      where: { userName, eventId },
-      transaction,
-    });
-
-    if (existing) {
-      throw new Error("User already registered for this event");
-    }
-
-    const count = await Registration.count({
-      where: { eventId },
-      transaction,
-    });
-
-    if (count >= event.totalSeats) {
-      throw new Error("Event is full");
-    }
-
-    const registration = await Registration.create(
-      { userName, eventId },
-      { transaction }
-    );
-
-    await transaction.commit();
-    return registration;
-  } catch (err) {
-    await transaction.rollback();
-    throw err;
+    throw error;
   }
 };
 
 const cancelRegistration = async (registrationId) => {
-  const registration = await Registration.findByPk(registrationId);
+  return prisma.$transaction(async (tx) => {
+    const registration = await tx.registration.findUnique({
+      where: {
+        id: Number(registrationId),
+      },
+    });
 
-  if (!registration) {
-    throw new Error("Registration not found");
-  }
+    if (!registration) {
+      const err = new Error("Registration not found");
+      err.statusCode = 404;
+      throw err;
+    }
 
-  await registration.destroy();
+    await tx.registration.delete({
+      where: {
+        id: Number(registrationId),
+      },
+    });
 
-  return {
-    message: "Registration cancelled successfully",
-  };
+    await tx.event.update({
+      where: {
+        id: registration.eventId,
+      },
+      data: {
+        availableSeats: {
+          increment: 1,
+        },
+      },
+    });
+
+    return {
+      message: "Registration cancelled successfully",
+    };
+  });
 };
 
 module.exports = {

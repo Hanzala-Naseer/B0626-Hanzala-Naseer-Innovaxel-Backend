@@ -1,19 +1,14 @@
-require("dotenv").config();
+// require("dotenv").config();
 
 const app = require("./app");
-const sequelize = require("./config/database");
-
-require("./models");
+const prisma = require("./config/prisma");
 
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
-    await sequelize.authenticate();
+    await prisma.$connect();
     console.log("Database connected successfully");
-
-    await sequelize.sync();
-    console.log("Database synchronized");
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
@@ -23,4 +18,9 @@ async function startServer() {
   }
 }
 
-startServer();
+// ✅ IMPORTANT: prevent server start during tests
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}
+
+module.exports = app;
