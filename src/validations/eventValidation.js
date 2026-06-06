@@ -56,3 +56,4 @@ if (!data.name || typeof data.name !== "string" || data.name.trim() === "") {
 module.exports = {
   validateCreateEvent,
 };
+

@@ -1,5 +1,3 @@
-
-
 const app = require("./app");
 const prisma = require("./config/prisma");
 
@@ -18,7 +16,6 @@ async function startServer() {
   }
 }
 
-// ✅ IMPORTANT: prevent server start during tests
 if (process.env.NODE_ENV !== "test") {
   startServer();
 }

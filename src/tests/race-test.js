@@ -39,7 +39,6 @@ export const options = {
 export function setup() {
   const timestamp = Date.now();
 
-  // Create Duplicate Registration event
   const duplicateEvent = http.post(
     `${BASE_URL}/events`,
     JSON.stringify({
@@ -50,7 +49,6 @@ export function setup() {
     params
   );
 
-  // Create Last Seat event
   const lastSeatEvent = http.post(
     `${BASE_URL}/events`,
     JSON.stringify({
@@ -61,7 +59,6 @@ export function setup() {
     params
   );
 
-  // Create Capacity event
   const capacityEvent = http.post(
     `${BASE_URL}/events`,
     JSON.stringify({
@@ -88,7 +85,6 @@ export function setup() {
   const lastSeatEventId = lastSeatEvent.json("id");
   const capacityEventId = capacityEvent.json("id");
 
-  // Pre-fill Last Seat event with 4 registrations
   for (let i = 1; i <= 4; i++) {
     http.post(
       `${BASE_URL}/registrations`,
@@ -101,12 +97,10 @@ export function setup() {
   }
 
   console.log(`
-====================================
-Created Events
+Created Events 
 Duplicate Event: ${duplicateEventId}
 Last Seat Event: ${lastSeatEventId}
 Capacity Event: ${capacityEventId}
-====================================
 `);
 
   return {
