@@ -113,7 +113,7 @@ The app loads `.env.test` automatically when `NODE_ENV=test`.
 - Blocks duplicate registrations (same user can't register twice for the same event)
 - Blocks registration if the event is already full
 - Filter for upcoming events only
-- Sort events by date
+- Sort events by date (Asc/Desc)
 - Race condition handling using Prisma transactions
 
 ---
