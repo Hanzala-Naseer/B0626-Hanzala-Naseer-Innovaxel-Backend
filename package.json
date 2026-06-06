@@ -1,8 +1,11 @@
 {
   "name": "b0626-hanzala-naseer-innovaxel-backend",
   "version": "1.0.0",
-  "description": "Event Registration System API built for Innovaxel Summer Internship Program 2026 using Node.js, Express.js, PostgreSQL, and Sequelize.",
+  "description": "Event Registration System API built for Innovaxel Summer Internship Program 2026 using Node.js, Express.js, PostgreSQL, and Prisma(ORM).",
   "main": "index.js",
+  "jest": {
+    "testTimeout": 10000
+  },
   "scripts": {
     "test": "cross-env NODE_ENV=test jest --runInBand",
     "start": "node src/server.js",

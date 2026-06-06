@@ -9,6 +9,9 @@ const createEvent = async (req, res, next) => {
 
     res.status(201).json(event);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 };
@@ -18,6 +21,9 @@ const getEvents = async (req, res, next) => {
     const events = await eventService.getEvents(req.query);
     res.status(200).json(events);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
     next(error);
   }
 };

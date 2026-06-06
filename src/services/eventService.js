@@ -5,17 +5,23 @@ const createEvent = async ({ name, totalSeats, eventDate }) => {
     where: { name },
   });
 
-  if (existingEvent) {
-    throw new Error("Event name already exists");
-  }
+ if (existingEvent) {
+  const err = new Error("Event name already exists");
+  err.statusCode = 409;
+  throw err;
+}
 
-  if (!totalSeats || totalSeats <= 0) {
-    throw new Error("Total seats must be greater than 0");
-  }
+if (!totalSeats || totalSeats <= 0) {
+  const err = new Error("Total seats must be greater than 0");
+  err.statusCode = 400;
+  throw err;
+}
 
-  if (new Date(eventDate) <= new Date()) {
-    throw new Error("Event date must be in the future");
-  }
+if (new Date(eventDate) <= new Date()) {
+  const err = new Error("Event date must be in the future");
+  err.statusCode = 400;
+  throw err;
+}
 
   return prisma.event.create({
     data: {

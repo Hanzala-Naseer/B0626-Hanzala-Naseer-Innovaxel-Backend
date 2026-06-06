@@ -1,4 +1,4 @@
-// require("dotenv").config();
+
 
 const app = require("./app");
 const prisma = require("./config/prisma");
