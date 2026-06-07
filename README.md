@@ -76,7 +76,7 @@ The project follows a layered architecture where:
 ### Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Hanzala-Naseer/B0626-Hanzala-Naseer-Innovaxel-Backend.git
 cd B0626-Hanzala-Naseer-Innovaxel-Backend
 ```
 
