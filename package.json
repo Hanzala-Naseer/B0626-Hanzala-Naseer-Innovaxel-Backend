@@ -4,12 +4,15 @@
   "description": "Event Registration System API built for Innovaxel Summer Internship Program 2026 using Node.js, Express.js, PostgreSQL, and Prisma(ORM).",
   "main": "index.js",
   "jest": {
-    "testTimeout": 10000
+    "testTimeout": 10000,
+    "setupFiles": ["./jest.setup.js"]   
+
   },
   "scripts": {
     "test": "cross-env NODE_ENV=test jest --runInBand",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "dev:test": "cross-env NODE_ENV=test nodemon src/server.js"
   },
   "repository": {
     "type": "git",

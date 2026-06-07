@@ -63,7 +63,6 @@ const registerUser = async ({ userName, eventId }) => {
 const cancelRegistration = async (registrationId) => {
   const id = Number(registrationId);
 
-  // Only reject NaN. Let negatives reach Prisma (they'll return null → 404).
   if (isNaN(id)) {
     const err = new Error("Invalid registration ID");
     err.statusCode = 400;
