@@ -1,6 +1,25 @@
 const validateCreateEvent = (data) => {
+  const allowedFields = ["name", "totalSeats", "eventDate"];
+
+  const extraFields = Object.keys(data).filter(
+    (key) => !allowedFields.includes(key)
+  );
+
+  if (extraFields.length > 0) {
+    const error = new Error(
+      `Unknown field(s): ${extraFields.join(", ")}`
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
   const errors = [];
-if (!data.name || typeof data.name !== "string" || data.name.trim() === "") {
+
+  if (
+    !data.name ||
+    typeof data.name !== "string" ||
+    data.name.trim() === ""
+  ) {
     errors.push("name is required");
   } else {
     const name = data.name.trim();
@@ -10,7 +29,11 @@ if (!data.name || typeof data.name !== "string" || data.name.trim() === "") {
     }
   }
 
-  if (data.totalSeats === undefined || data.totalSeats === null || data.totalSeats === "") {
+  if (
+    data.totalSeats === undefined ||
+    data.totalSeats === null ||
+    data.totalSeats === ""
+  ) {
     errors.push("totalSeats is required");
   } else {
     const num = Number(data.totalSeats);
@@ -18,8 +41,13 @@ if (!data.name || typeof data.name !== "string" || data.name.trim() === "") {
     if (isNaN(num)) {
       errors.push("totalSeats must be a valid number");
     } else {
-      if (!Number.isInteger(num)) errors.push("totalSeats must be an integer");
-      if (num <= 0) errors.push("totalSeats must be greater than 0");
+      if (!Number.isInteger(num)) {
+        errors.push("totalSeats must be an integer");
+      }
+
+      if (num <= 0) {
+        errors.push("totalSeats must be greater than 0");
+      }
     }
   }
 
@@ -29,13 +57,21 @@ if (!data.name || typeof data.name !== "string" || data.name.trim() === "") {
     const isValidFormat = /^\d{4}-\d{2}-\d{2}$/.test(data.eventDate);
 
     if (!isValidFormat) {
-      errors.push("Invalid format. Use YYYY-MM-DD (e.g. 2026-07-01)");
+      errors.push(
+        "Invalid format. Use YYYY-MM-DD (e.g. 2026-07-01)"
+      );
     } else {
       const date = new Date(data.eventDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (date <= today) {
-        errors.push("eventDate cannot be in the past");
+
+      if (isNaN(date.getTime())) {
+        errors.push("Invalid event date");
+      } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (date <= today) {
+          errors.push("Event date must be in the future");
+        }
       }
     }
   }
@@ -56,4 +92,3 @@ if (!data.name || typeof data.name !== "string" || data.name.trim() === "") {
 module.exports = {
   validateCreateEvent,
 };
-

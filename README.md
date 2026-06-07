@@ -1,68 +1,133 @@
 # Event Registration System API
 
-This is a backend API I built for the Innovaxel Summer Internship 2026. The task was to create a system where you can create events, register users for them, and handle edge cases like full events and duplicate registrations.
+Backend API developed as part of the Innovaxel Summer Internship Program 2026 assessment.
 
-I used Node.js, Express, and Prisma ORM with PostgreSQL. One of the main things I learned while building this was how to handle race conditions — where two users try to grab the last seat at the same time. I ended up using Prisma transactions to deal with that.
+The application allows users to create events, register attendees, manage registrations, and handle real-world constraints such as limited seat availability, duplicate registrations, and concurrent registration requests.
 
-**Stack:** Node.js · Express.js · Prisma ORM · PostgreSQL · Jest + Supertest
+## Tech Stack
+
+* Node.js
+* Express.js
+* Prisma ORM
+* PostgreSQL (Neon Database)
+* Jest
+* Supertest
+* k6
 
 ---
 
-## Getting Started
+## Features
 
-**1. Clone the repo**
+### Event Management
+
+* Create events with unique names
+* Validate future event dates
+* Configure total seat capacity
+* View all events
+* Retrieve a specific event by ID
+* Filter upcoming events
+* Sort events by date
+
+### Registration Management
+
+* Register users for events
+* Prevent duplicate registrations
+* Prevent registrations when an event is full
+* Cancel registrations
+* Automatically restore seats after cancellation
+
+### Concurrency Handling
+
+* Prevent overbooking during simultaneous registration requests
+* Handle race conditions using Prisma transactions
+* Maintain accurate seat counts under concurrent load
+
+---
+
+## Project Structure
+
+```text
+src
+├── controllers
+├── routes
+├── services
+├── validations
+├── middleware
+├── tests
+└── app.js
+
+prisma
+├── schema.prisma
+└── migrations
+```
+
+The project follows a layered architecture where:
+
+* Routes define API endpoints
+* Controllers handle HTTP requests and responses
+* Services contain business logic
+* Validations enforce input rules
+* Prisma manages database operations
+
+---
+
+## Installation
+
+### Clone Repository
 
 ```bash
-gh repo clone Hanzala-Naseer/B0626-Hanzala-Naseer-Innovaxel-Backend
+git clone <repository-url>
 cd B0626-Hanzala-Naseer-Innovaxel-Backend
 ```
 
-**2. Install dependencies**
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-**3. Set up the database**
+### Configure Environment Variables
 
-```bash
-npx prisma migrate dev
-```
+Create a `.env` file:
 
-If the client isn't generated automatically:
-
-```bash
-npx prisma generate
-```
-
-**4. Start the server**
-
-```bash
-npm run dev   # uses nodemon, restarts on changes
-npm start     # plain node
-```
-
-Runs on `http://localhost:3000`
-
----
-
-## Environment Variables
-
-Create a `.env` in the root:
-
-```
-DATABASE_URL=postgresql://user:password@localhost:5432/yourdb
+```env
+DATABASE_URL=your_database_connection_string
 PORT=3000
 ```
 
-For tests I used a separate database so the test data doesn't mix with real data. Create `.env.test`:
+Create a separate `.env.test` file for testing:
 
-```
-DATABASE_URL=postgresql://user:password@localhost:5432/yourdb_test
+```env
+DATABASE_URL=your_test_database_connection_string
 NODE_ENV=test
 ```
 
-The app loads `.env.test` automatically when `NODE_ENV=test`.
+### Run Database Migrations
+
+```bash
+npx prisma migrate deploy
+npx prisma generate
+```
+
+### Start Server
+
+Development:
+
+```bash
+npm run dev
+```
+
+Production:
+
+```bash
+npm start
+```
+
+Server runs on:
+
+```text
+http://localhost:3000
+```
 
 ---
 
@@ -70,78 +135,190 @@ The app loads `.env.test` automatically when `NODE_ENV=test`.
 
 ### Events
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/events` | Get all events |
-| `POST` | `/events` | Create an event |
-| `GET` | `/events?upcoming=true` | Only future events |
-| `GET` | `/events?sort=desc` | Sort by date (descending) |
+| Method | Endpoint                | Description                    |
+| ------ | ----------------------- | ------------------------------ |
+| POST   | `/events`               | Create a new event             |
+| GET    | `/events`               | Retrieve all events            |
+| GET    | `/events/:id`           | Retrieve event by ID           |
+| GET    | `/events?upcoming=true` | Retrieve upcoming events       |
+| GET    | `/events?sort=asc`      | Sort events by date ascending  |
+| GET    | `/events?sort=desc`     | Sort events by date descending |
 
-**Creating an event:**
+### Create Event Example
 
 ```json
 {
-  "name": "Tech Meetup",
+  "name": "Tech Meetup 2027",
   "totalSeats": 50,
-  "eventDate": "2026-09-01T18:00:00Z"
+  "eventDate": "2027-09-01T18:00:00Z"
 }
 ```
 
+---
+
 ### Registrations
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/registrations` | Register a user |
-| `DELETE` | `/registrations/:id` | Cancel a registration |
+| Method | Endpoint             | Description                  |
+| ------ | -------------------- | ---------------------------- |
+| POST   | `/registrations`     | Register a user for an event |
+| DELETE | `/registrations/:id` | Cancel a registration        |
 
-**Registering a user:**
+### Register User Example
 
 ```json
 {
-  "userName": "hanzala",
+  "userName": "Hanzala",
   "eventId": 1
 }
 ```
 
 ---
 
-## Features
+## Validation Rules
 
-- Create and view events
-- Register users for events
-- Cancel registrations
-- Blocks duplicate registrations (same user can't register twice for the same event)
-- Blocks registration if the event is already full
-- Filter for upcoming events only
-- Sort events by date (Asc/Desc)
-- Race condition handling using Prisma transactions
+### Event Creation
 
----
+* Event name is required
+* Event name must be unique
+* Event name cannot contain only numbers
+* Total seats must be greater than zero
+* Total seats must be a positive integer
+* Event date must be a valid future date
 
-## How I Handled Seat Logic
+### Registration
 
-When an event is created, `availableSeats` starts equal to `totalSeats`.
-
-When someone registers, the API only decrements `availableSeats` if it's still above 0. If two requests hit at the exact same time, only one will get through — the other gets a 409. This was the trickiest part to get right.
-
-When a registration is cancelled, the seat gets added back inside a transaction so the count stays accurate.
+* User name is required
+* Event ID is required
+* User cannot register twice for the same event
+* Registration is rejected when event capacity is reached
 
 ---
 
-## Running Tests
+## Seat Management Logic
 
-Make sure `.env.test` points to a separate test database, then:
+When an event is created:
+
+```text
+availableSeats = totalSeats
+```
+
+When a user registers:
+
+```text
+availableSeats = availableSeats - 1
+```
+
+When a registration is cancelled:
+
+```text
+availableSeats = availableSeats + 1
+```
+
+All seat updates are performed inside database transactions to ensure consistency and prevent race-condition issues.
+
+---
+
+## Testing
+
+### Automated Testing
+
+The project includes:
+
+* Unit tests
+* Integration tests
+* Validation tests
+* Registration workflow tests
+* Concurrency tests
+
+Test Results:
+
+```text
+98/98 Tests Passed
+```
+
+Run tests:
 
 ```bash
 npm test
 ```
 
-I wrote tests using Jest and Supertest. They run sequentially (`--runInBand` in `package.json`) because parallel DB tests kept interfering with each other.
+---
 
-There's also a concurrency test in `src/tests/race-test.js` that sends multiple requests at the same time to make sure overbooking actually doesn't happen.
+### Postman Collection
+
+A complete Postman collection is included for manual API testing:
+
+```text
+/postman
+```
+
+The collection covers:
+
+* Event creation
+* Event retrieval
+* Validation scenarios
+* Registration workflows
+* Cancellation workflows
+* Edge cases
 
 ---
 
-## Notes
+### k6 Load & Concurrency Testing
 
-- This project was built for learning and as an internship submission — not meant for production
+k6 scripts are included to verify:
+
+* Duplicate registration protection
+* Last-seat race conditions
+* Capacity enforcement under concurrent load
+
+Run:
+
+```bash
+k6 run src/tests/race-test.js
+```
+
+Latest Results:
+
+```text
+✓ 100% Checks Passed
+✓ No Overbooking
+✓ No Duplicate Registrations
+✓ No Server Errors
+```
+
+---
+
+## Design Decisions
+
+### Why Prisma?
+
+Prisma provides:
+
+* Type-safe database access
+* Simplified query building
+* Transaction support
+* Better maintainability
+
+### Why PostgreSQL?
+
+PostgreSQL offers:
+
+* Reliable transactional consistency
+* Strong concurrency support
+* Excellent integration with Prisma
+
+### Why Transactions?
+
+Transactions ensure that:
+
+* Seat counts remain accurate
+* Overbooking cannot occur
+* Concurrent requests are handled safely
+
+---
+
+## Author
+
+**Hanzala Naseer**
+
+Innovaxel Summer Internship Program 2026 Backend Assessment Submission

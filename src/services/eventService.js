@@ -66,7 +66,45 @@ const getEvents = async (query) => {
   }));
 };
 
+const getEventById = async (id) => {
+  const eventId = Number(id);
+
+  if (isNaN(eventId)) {
+    const err = new Error("Invalid event id");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const event = await prisma.event.findUnique({
+    where: {
+      id: eventId,
+    },
+    include: {
+      _count: {
+        select: {
+          registrations: true,
+        },
+      },
+    },
+  });
+
+  if (!event) {
+    const err = new Error("Event not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  return {
+    id: event.id,
+    name: event.name,
+    totalSeats: event.totalSeats,
+    availableSeats: event.availableSeats,
+    eventDate: event.eventDate,
+    totalRegistrations: event._count.registrations,
+  };
+};
 module.exports = {
   createEvent,
   getEvents,
+  getEventById
 };

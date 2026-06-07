@@ -368,31 +368,31 @@ describe("POST /events", () => {
     expect(res.status).not.toBe(201);
   });
 
-  it("returns 400 with 'eventDate cannot be in the past' for a past date", async () => {
+  it("returns 400 with 'Event date must be in the future' for a past date", async () => {
     const res = await request(app)
       .post("/events")
       .send({ name: "Past Event", totalSeats: 50, eventDate: pastDateStr() });
 
     expect(res.status).toBe(400);
-    expect(res.body.message).toBe("eventDate cannot be in the past");
+    expect(res.body.message).toBe("Event date must be in the future");
   });
 
-  it("returns 400 with 'eventDate cannot be in the past' for a date 7 days ago", async () => {
+  it("returns 400 with 'Event date must be in the future' for a date 7 days ago", async () => {
     const res = await request(app)
       .post("/events")
       .send({ name: "Week Ago Event", totalSeats: 50, eventDate: pastDateStr(7) });
 
     expect(res.status).toBe(400);
-    expect(res.body.message).toBe("eventDate cannot be in the past");
+    expect(res.body.message).toBe("Event date must be in the future");
   });
 
-  it("returns 400 with 'eventDate cannot be in the past' for today's date", async () => {
+  it("returns 400 with 'Event date must be in the future' for today's date", async () => {
     const res = await request(app)
       .post("/events")
       .send({ name: "Today Event", totalSeats: 50, eventDate: todayDateStr() });
 
     expect(res.status).toBe(400);
-    expect(res.body.message).toBe("eventDate cannot be in the past");
+    expect(res.body.message).toBe("Event date must be in the future");
   });
 
 

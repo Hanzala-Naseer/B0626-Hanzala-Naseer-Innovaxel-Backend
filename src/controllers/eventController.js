@@ -28,7 +28,22 @@ const getEvents = async (req, res, next) => {
   }
 };
 
+const getEventById = async (req, res, next) => {
+  try {
+    const event = await eventService.getEventById(req.params.id);
+    res.status(200).json(event);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   createEvent,
   getEvents,
+  getEventById
 };
