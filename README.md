@@ -4,6 +4,11 @@ Backend API developed as part of the Innovaxel Summer Internship Program 2026 as
 
 The application allows users to create events, register attendees, manage registrations, and handle real-world constraints such as limited seat availability, duplicate registrations, and concurrent registration requests.
 
+
+## Demo Video
+
+https://drive.google.com/file/d/1qy7JCzuH82EbHsBCH8FWhSh_BDn0ndMo/view
+
 ## Tech Stack
 
 * Node.js
